@@ -1,0 +1,51 @@
+---
+title: "Palmer Penguins"
+output: github_document
+---
+## TidyTuesday [2020-07-28]
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE, 
+  fig.width = 10,
+  fig.out="100%"
+  )
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(palmerpenguins)
+library(tidyverse)
+```
+
+A quick look at the tidied data set
+```{r}
+palmerpenguins::penguins
+```
+
+## Measurements split by sex and species
+```{r}
+palmerpenguins::penguins %>%  
+  gather(k, v, -species, -island, -sex, -year) %>% 
+  ggplot(aes(v))+
+  geom_density(aes(y=..scaled.., fill=sex), alpha=1/2)+
+  facet_grid(species ~ k, scales="free")+
+  scale_fill_viridis_d()
+```
+* Males bigger than females
+
+
+## Measurements split by island and species
+```{r}
+palmerpenguins::penguins %>%  
+  gather(k, v, -species, -island, -sex, -year) %>% 
+  ggplot(aes(v))+
+  geom_density(aes(y=..scaled.., fill=species), alpha=1/2)+
+  facet_grid(island ~ k, scales="free")+
+  scale_fill_viridis_d()
+```
+
+* Adelle on all three islands and no difference in distrinutions between islands. 
+* Chinstrap unique to Dream Island and Gentoo unique to Biscoe. 
+* Gentoo bigger than Adelle
+* Chinstrap similar to Adelle but much bigger bill length!
