@@ -40,8 +40,9 @@ palmerpenguins::penguins %>%
 #> Warning: Removed 8 rows containing non-finite values (stat_density).
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- --> \* Males
-bigger than females
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+  - Males bigger than females
 
 ## Measurements split by island and species
 
@@ -57,8 +58,8 @@ palmerpenguins::penguins %>%
 
 ![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-  - Adelle on all three islands and no difference in distrinutions
+  - Adelie on all three islands and no difference in distributions
     between islands.
   - Chinstrap unique to Dream Island and Gentoo unique to Biscoe.
-  - Gentoo bigger than Adelle
+  - Gentoo bigger than Adelle (and biggest overall)
   - Chinstrap similar to Adelle but much bigger bill length\!

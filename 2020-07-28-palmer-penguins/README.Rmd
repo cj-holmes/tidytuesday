@@ -32,6 +32,7 @@ palmerpenguins::penguins %>%
   facet_grid(species ~ k, scales="free")+
   scale_fill_viridis_d()
 ```
+
 * Males bigger than females
 
 
@@ -45,7 +46,7 @@ palmerpenguins::penguins %>%
   scale_fill_viridis_d()
 ```
 
-* Adelle on all three islands and no difference in distrinutions between islands. 
+* Adelie on all three islands and no difference in distributions between islands. 
 * Chinstrap unique to Dream Island and Gentoo unique to Biscoe. 
-* Gentoo bigger than Adelle
+* Gentoo bigger than Adelle (and biggest overall)
 * Chinstrap similar to Adelle but much bigger bill length!
