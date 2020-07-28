@@ -43,6 +43,7 @@ palmerpenguins::penguins %>%
 ![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
   - Males bigger than females
+  - Some observations with NA sex
 
 ## Measurements split by island and species
 
@@ -61,5 +62,20 @@ palmerpenguins::penguins %>%
   - Adelie on all three islands and no difference in distributions
     between islands.
   - Chinstrap unique to Dream Island and Gentoo unique to Biscoe.
-  - Gentoo bigger than Adelle (and biggest overall)
-  - Chinstrap similar to Adelle but much bigger bill length\!
+  - Gentoo bigger than Adelie (and biggest overall) **BUT** smaller bill
+    depth\!
+  - Chinstrap similar to Adelie but much bigger bill length\!
+
+## Classifier
+
+Build classifier from **all data** just for fun (I am not training a
+model and evaluating performance here\!)
+
+``` r
+rpart::rpart(data = palmerpenguins::penguins %>% select(-island),
+             formula = species ~ .,
+             model = TRUE) %>% 
+  rpart.plot::rpart.plot(type=5)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
