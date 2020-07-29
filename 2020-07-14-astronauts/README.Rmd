@@ -1,0 +1,60 @@
+---
+title: "Astronaut database"
+output: github_document
+---
+## TidyTuesday [2020-07-14]
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE, 
+  fig.width = 9,
+  fig.height = 6,
+  out.width="100%"
+  )
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(tidytuesdayR)
+library(tidyverse)
+```
+
+A quick look at the data set
+```{r}
+d <- tidytuesdayR::tt_load("2020-07-14")[[1]]
+```
+
+```{r}
+glimpse(d)
+```
+
+First thought, what is the difference in time between when an astronaut is first selected and when they go on their first mission? How does it vary by nationality?
+```{r}
+d %>% 
+  filter(mission_number == 1) %>% # first mission
+  mutate(age_at_selection = year_of_selection - year_of_birth,
+         age_at_first_mission = year_of_mission - year_of_birth,
+         diff = age_at_first_mission - age_at_selection) %>% 
+  group_by(nationality) %>% 
+  filter(n() > 20) %>% # Select high count nationalities
+  gather(k, v, age_at_selection, age_at_first_mission, diff) %>% 
+  mutate(k_pretty = case_when(k == "age_at_selection" ~ "Age at selection year",
+                              k == "age_at_first_mission" ~ "Age at first mission",
+                              k == "diff" ~ "Difference",
+                              TRUE ~ "Error")) %>% 
+  ggplot()+
+  geom_histogram(aes(v, ..density.., fill=k_pretty), 
+                 position = "identity", 
+                 alpha=1/2, binwidth = 1, center=0)+
+  facet_wrap(~nationality, scales = "free_y", ncol=1)+
+  scale_fill_viridis_d("")+
+  scale_x_continuous(breaks=scales::pretty_breaks(10))+
+  theme(legend.position = "bottom")+
+  labs(title = "First mission - distribution of age at selection-year and age at mission-year",
+       subtitle = "Facetted by the two biggest astronaut nationalities",
+       x = "Age [years]",
+       y = "Density estimate")
+```
+
+
+
