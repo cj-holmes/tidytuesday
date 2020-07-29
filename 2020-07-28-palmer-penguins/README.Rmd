@@ -61,3 +61,4 @@ rpart::rpart(data = palmerpenguins::penguins %>% select(-island),
   rpart.plot::rpart.plot(type=5)
 ```
 
+* These splits appear sensible based on a visual inspection of the density distributions above
