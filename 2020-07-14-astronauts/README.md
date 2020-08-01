@@ -145,4 +145,16 @@ last_plot() + scale_fill_viridis_c(option="plasma")
 ``` r
 ggsave("astro-hours-plasma.pdf", width=9, height=9)  
 #> Warning: Removed 58 rows containing missing values (geom_text).
+
+last_plot() + scale_fill_viridis_c(option="cividis")
+#> Scale for 'fill' is already present. Adding another scale for 'fill', which
+#> will replace the existing scale.
+#> Warning: Removed 58 rows containing missing values (geom_text).
+```
+
+![](README_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+
+``` r
+ggsave("astro-hours-cividis.pdf", width=9, height=9)
+#> Warning: Removed 58 rows containing missing values (geom_text).
 ```

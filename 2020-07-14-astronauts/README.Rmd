@@ -101,5 +101,8 @@ ggsave("astro-hours-viridis.png", width=9, height=9)
 ```{r, fig.width=6, fig.height=6}
 last_plot() + scale_fill_viridis_c(option="plasma")
 ggsave("astro-hours-plasma.pdf", width=9, height=9)  
+
+last_plot() + scale_fill_viridis_c(option="cividis")
+ggsave("astro-hours-cividis.pdf", width=9, height=9)
 ```
 
