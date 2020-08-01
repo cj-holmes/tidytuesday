@@ -81,7 +81,7 @@ d %>%
        y = "Density estimate")
 ```
 
-<img src="README_files/figure-gfm/unnamed-chunk-5-1.png" width="100%" />
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ``` r
 pd <-
@@ -123,7 +123,7 @@ pd %>%
 #> Warning: Removed 58 rows containing missing values (geom_text).
 ```
 
-<img src="README_files/figure-gfm/unnamed-chunk-6-1.png" width="100%" />
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ``` r
   
@@ -140,7 +140,7 @@ last_plot() + scale_fill_viridis_c(option="plasma")
 #> Warning: Removed 58 rows containing missing values (geom_text).
 ```
 
-<img src="README_files/figure-gfm/unnamed-chunk-7-1.png" width="100%" />
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
 ggsave("astro-hours-plasma.pdf", width=9, height=9)  

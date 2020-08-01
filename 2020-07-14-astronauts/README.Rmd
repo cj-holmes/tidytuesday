@@ -9,8 +9,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   echo = TRUE, 
   fig.width = 9,
-  fig.height = 6,
-  out.width="100%"
+  fig.height = 6
   )
 ```
 
@@ -58,7 +57,7 @@ d %>%
 
 
 
-```{r, fig.width=8, fig.height=8}
+```{r, fig.width=6, fig.height=6}
 pd <-
   d %>% 
   group_by(year_of_mission) %>% 
@@ -99,7 +98,7 @@ ggsave("astro-hours-viridis.pdf", width=9, height=9)
 ggsave("astro-hours-viridis.png", width=9, height=9)
 ```
 
-```{r, fig.width=8, fig.height=8}
+```{r, fig.width=6, fig.height=6}
 last_plot() + scale_fill_viridis_c(option="plasma")
 ggsave("astro-hours-plasma.pdf", width=9, height=9)  
 ```
