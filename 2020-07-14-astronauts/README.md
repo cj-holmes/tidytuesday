@@ -82,3 +82,67 @@ d %>%
 ```
 
 <img src="README_files/figure-gfm/unnamed-chunk-5-1.png" width="100%" />
+
+``` r
+pd <-
+  d %>% 
+  group_by(year_of_mission) %>% 
+  summarise(year_hours = sum(hours_mission)) %>% 
+  mutate(text_label = case_when(year_hours == max(year_hours) ~ 
+                                  glue::glue("{round(year_hours)} astronaut mission hours [{year_of_mission}]"),
+                                TRUE ~ NA_character_))
+#> `summarise()` ungrouping output (override with `.groups` argument)
+
+
+pd %>% 
+  ggplot(aes(year_of_mission, year_hours))+
+  geom_col(aes(fill=year_hours))+
+  coord_polar(start=0)+
+  scale_fill_viridis_c(option="viridis", begin = 0.1)+
+  expand_limits(y = -50000)+
+  geom_text(aes(label = text_label), hjust="outward", col="grey80", nudge_y=8000, size=3)+
+  annotate(geom="segment", x=1960, xend=1960, y=0, yend=max(pd$year_hours)*1.1, col="grey80", size=0.1)+
+  annotate(geom="text", x=1960, y=max(pd$year_hours)*1.2, label="Year\n[2019 - 1960]", size=3, colour="grey80")+
+  annotate(geom="text", x=1960+((2019-1960)/2), y=max(pd$year_hours), label="Total astronaut mission hours by year\n#tidytuesday", size=3, colour="grey60")+
+  # geom_segment(aes(x=1963, xend=2017, y=max(pd$year_hours)*1.2, yend=max(pd$year_hours)*1.2), col="white")+
+  
+  theme_void()+
+  theme(panel.background = element_rect(fill="grey10"),
+        plot.background = element_rect(fill="grey10"),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "",
+        axis.text.x = element_blank(),
+        axis.line.y = element_blank(),
+        plot.title = element_text(colour="white", hjust = 0.5),
+        plot.subtitle = element_text(colour="white", hjust = 0.5),
+        plot.caption = element_text(colour="white", hjust = 0.5))
+#> Warning: Removed 58 rows containing missing values (geom_text).
+```
+
+<img src="README_files/figure-gfm/unnamed-chunk-6-1.png" width="100%" />
+
+``` r
+  
+ggsave("astro-hours-viridis.pdf", width=9, height=9)
+#> Warning: Removed 58 rows containing missing values (geom_text).
+ggsave("astro-hours-viridis.png", width=9, height=9)
+#> Warning: Removed 58 rows containing missing values (geom_text).
+```
+
+``` r
+last_plot() + scale_fill_viridis_c(option="plasma")
+#> Scale for 'fill' is already present. Adding another scale for 'fill', which
+#> will replace the existing scale.
+#> Warning: Removed 58 rows containing missing values (geom_text).
+```
+
+<img src="README_files/figure-gfm/unnamed-chunk-7-1.png" width="100%" />
+
+``` r
+ggsave("astro-hours-plasma.pdf", width=9, height=9)  
+#> Warning: Removed 58 rows containing missing values (geom_text).
+```
