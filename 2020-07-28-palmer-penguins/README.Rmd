@@ -8,8 +8,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   echo = TRUE, 
-  fig.width = 10,
-  fig.out="100%"
+  fig.width = 8
   )
 ```
 
@@ -52,7 +51,7 @@ palmerpenguins::penguins %>%
 * Gentoo bigger than Adelie (and biggest overall) **BUT** smaller bill depth!
 * Chinstrap similar to Adelie but much bigger bill length!
 
-## Classifier
+## Simple classifier
 Build classifier from **all data** just for fun (I am not training a model and evaluating performance here!)
 ```{r}
 rpart::rpart(data = palmerpenguins::penguins %>% select(-island),
@@ -62,3 +61,99 @@ rpart::rpart(data = palmerpenguins::penguins %>% select(-island),
 ```
 
 * These splits appear sensible based on a visual inspection of the density distributions above
+
+## Full random forest
+```{r warning=FALSE, message=FALSE}
+library(tidymodels)
+```
+
+Split the data
+```{r}
+set.seed(4)
+split <- rsample::initial_split(palmerpenguins::penguins, strata = species)
+```
+
+```{r}
+# Check propotions in original and training/test sets
+palmerpenguins::penguins$species %>% table() %>% prop.table()
+training(split)$species %>% table() %>% prop.table()
+testing(split)$species %>% table() %>% prop.table()
+```
+
+### Deinfe model with `parsnip`
+Define a random forest model using `randomForest`
+```{r}
+my_model <- 
+  parsnip::rand_forest(mode = "classification", trees = 200) %>% 
+  parsnip::set_engine("randomForest", importance = TRUE, do.trace = 20)
+```
+
+### Define recipe with `recipes`
+```{r}
+my_recipe <-
+  recipes::recipe(species ~ ., data = palmerpenguins::penguins) %>% 
+  step_meanimpute(all_numeric()) %>% 
+  step_modeimpute(all_nominal(), -all_outcomes()) %>% 
+  step_dummy(all_nominal(), -all_outcomes())
+```
+
+### Create workflow and fit model
+```{r}
+# Create a workflow   
+my_wf <-
+  workflow() %>% 
+  add_model(my_model) %>% 
+  add_recipe(my_recipe)
+
+# Create the random foresr model on the training data
+rf_fit <- parsnip::fit(my_wf, data=training(split))
+```
+
+### Visualise fit
+View variable importance
+```{r}
+# Extract model and plot importance
+rfmod <- rf_fit$fit$fit$fit
+rfmod %>% randomForest::varImpPlot()
+
+rfmod$importance %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>% 
+  ggplot(aes(MeanDecreaseAccuracy, MeanDecreaseGini))+
+  geom_text(aes(label = rowname), size=3)
+```
+
+View error rates on out of bag (OOB) observations
+```{r}
+rfmod$err.rate %>% 
+  as_tibble() %>% 
+  mutate(tree = row_number()) %>% 
+  gather(k, v, -tree) %>% 
+  ggplot(aes(tree, v, col=k))+
+  geom_line()+
+  facet_wrap(~k, nrow=1)+
+  theme(legend.position = "")
+```
+
+### Predict on testing set
+```{r}
+class_pred <-
+  predict(rf_fit, new_data = testing(split), type = "class") %>% 
+  cbind(testing(split))
+```
+
+Measuring performance of the class measure
+```{r}
+metricset <- 
+  yardstick::metric_set(sens, 
+                        spec, 
+                        ppv, 
+                        npv, 
+                        accuracy, 
+                        bal_accuracy, 
+                        recall)
+
+metricset(class_pred, truth = species, estimate = .pred_class)
+
+yardstick::conf_mat(class_pred, truth = species, estimate = .pred_class)
+```

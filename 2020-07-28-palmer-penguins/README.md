@@ -66,7 +66,7 @@ palmerpenguins::penguins %>%
     depth\!
   - Chinstrap similar to Adelie but much bigger bill length\!
 
-## Classifier
+## Simple classifier
 
 Build classifier from **all data** just for fun (I am not training a
 model and evaluating performance here\!)
@@ -82,3 +82,154 @@ rpart::rpart(data = palmerpenguins::penguins %>% select(-island),
 
   - These splits appear sensible based on a visual inspection of the
     density distributions above
+
+## Full random forest
+
+``` r
+library(tidymodels)
+```
+
+Split the data
+
+``` r
+set.seed(4)
+split <- rsample::initial_split(palmerpenguins::penguins, strata = species)
+```
+
+``` r
+# Check propotions in original and training/test sets
+palmerpenguins::penguins$species %>% table() %>% prop.table()
+#> .
+#>    Adelie Chinstrap    Gentoo 
+#> 0.4418605 0.1976744 0.3604651
+training(split)$species %>% table() %>% prop.table()
+#> .
+#>    Adelie Chinstrap    Gentoo 
+#> 0.4418605 0.1976744 0.3604651
+testing(split)$species %>% table() %>% prop.table()
+#> .
+#>    Adelie Chinstrap    Gentoo 
+#> 0.4418605 0.1976744 0.3604651
+```
+
+### Deinfe model with `parsnip`
+
+Define a random forest model using `randomForest`
+
+``` r
+my_model <- 
+  parsnip::rand_forest(mode = "classification", trees = 200) %>% 
+  parsnip::set_engine("randomForest", importance = TRUE, do.trace = 20)
+```
+
+### Define recipe with `recipes`
+
+``` r
+my_recipe <-
+  recipes::recipe(species ~ ., data = palmerpenguins::penguins) %>% 
+  step_meanimpute(all_numeric()) %>% 
+  step_modeimpute(all_nominal(), -all_outcomes()) %>% 
+  step_dummy(all_nominal(), -all_outcomes())
+```
+
+### Create workflow and fit model
+
+``` r
+# Create a workflow   
+my_wf <-
+  workflow() %>% 
+  add_model(my_model) %>% 
+  add_recipe(my_recipe)
+
+# Create the random foresr model on the training data
+rf_fit <- parsnip::fit(my_wf, data=training(split))
+#> ntree      OOB      1      2      3
+#>    20:   2.33%  2.63%  3.92%  1.08%
+#>    40:   2.71%  2.63%  5.88%  1.08%
+#>    60:   1.94%  1.75%  3.92%  1.08%
+#>    80:   2.33%  2.63%  3.92%  1.08%
+#>   100:   1.94%  1.75%  3.92%  1.08%
+#>   120:   1.94%  0.88%  5.88%  1.08%
+#>   140:   1.55%  0.88%  3.92%  1.08%
+#>   160:   1.55%  0.88%  3.92%  1.08%
+#>   180:   1.55%  0.88%  3.92%  1.08%
+#>   200:   1.55%  0.88%  3.92%  1.08%
+```
+
+### Visualise fit
+
+View variable importance
+
+``` r
+# Extract model and plot importance
+rfmod <- rf_fit$fit$fit$fit
+rfmod %>% randomForest::varImpPlot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+``` r
+
+rfmod$importance %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>% 
+  ggplot(aes(MeanDecreaseAccuracy, MeanDecreaseGini))+
+  geom_text(aes(label = rowname), size=3)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
+
+View error rates on out of bag (OOB) observations
+
+``` r
+rfmod$err.rate %>% 
+  as_tibble() %>% 
+  mutate(tree = row_number()) %>% 
+  gather(k, v, -tree) %>% 
+  ggplot(aes(tree, v, col=k))+
+  geom_line()+
+  facet_wrap(~k, nrow=1)+
+  theme(legend.position = "")
+```
+
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+### Predict on testing set
+
+``` r
+class_pred <-
+  predict(rf_fit, new_data = testing(split), type = "class") %>% 
+  cbind(testing(split))
+```
+
+Measuring performance of the class measure
+
+``` r
+metricset <- 
+  yardstick::metric_set(sens, 
+                        spec, 
+                        ppv, 
+                        npv, 
+                        accuracy, 
+                        bal_accuracy, 
+                        recall)
+
+metricset(class_pred, truth = species, estimate = .pred_class)
+#> # A tibble: 7 x 3
+#>   .metric      .estimator .estimate
+#>   <chr>        <chr>          <dbl>
+#> 1 sens         macro          0.991
+#> 2 spec         macro          0.995
+#> 3 ppv          macro          0.981
+#> 4 npv          macro          0.993
+#> 5 accuracy     multiclass     0.988
+#> 6 bal_accuracy macro          0.993
+#> 7 recall       macro          0.991
+
+yardstick::conf_mat(class_pred, truth = species, estimate = .pred_class)
+#>            Truth
+#> Prediction  Adelie Chinstrap Gentoo
+#>   Adelie        37         0      0
+#>   Chinstrap      1        17      0
+#>   Gentoo         0         0     31
+```
