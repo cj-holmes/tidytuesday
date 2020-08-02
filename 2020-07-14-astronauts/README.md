@@ -83,6 +83,31 @@ d %>%
 
 ![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
+## Astronaut hours by year
+
+Here I will begin by re defining `coord_munch()` in order to have higher
+resolution polygons when using polar coordinates. This hack is taken
+from
+[here](https://stackoverflow.com/questions/9483033/increase-polygonal-resolution-of-ggplot-polar-plots)
+
+``` r
+# Save the original version of coord_munch
+coord_munch_old <- ggplot2:::coord_munch
+
+# Make a wrapper function that has a different default for segment_length
+coord_munch_new <- function(coord, data, range, segment_length = 1/500) {
+  coord_munch_old(coord, data, range, segment_length)
+}
+
+# Make the new function run in the same environment
+environment(coord_munch_new) <- environment(ggplot2:::coord_munch)
+
+# Replace ggplot2:::coord_munch with coord_munch_new
+assignInNamespace("coord_munch", coord_munch_new, ns="ggplot2")
+```
+
+Summarise data by summing mission hours per year of mission
+
 ``` r
 pd <-
   d %>% 
@@ -92,20 +117,36 @@ pd <-
                                   glue::glue("{round(year_hours)} astronaut mission hours [{year_of_mission}]"),
                                 TRUE ~ NA_character_))
 #> `summarise()` ungrouping output (override with `.groups` argument)
+```
 
+Visualise
 
+``` r
 pd %>% 
   ggplot(aes(year_of_mission, year_hours))+
   geom_col(aes(fill=year_hours))+
   coord_polar(start=0)+
   scale_fill_viridis_c(option="viridis", begin = 0.1)+
-  expand_limits(y = -50000)+
   geom_text(aes(label = text_label), hjust="outward", col="grey80", nudge_y=8000, size=3)+
-  annotate(geom="segment", x=1960, xend=1960, y=0, yend=max(pd$year_hours)*1.1, col="grey80", size=0.1)+
-  annotate(geom="text", x=1960, y=max(pd$year_hours)*1.2, label="Year\n[2019 - 1960]", size=3, colour="grey80")+
-  annotate(geom="text", x=1960+((2019-1960)/2), y=max(pd$year_hours), label="Total astronaut mission hours by year\n#tidytuesday", size=3, colour="grey60")+
-  # geom_segment(aes(x=1963, xend=2017, y=max(pd$year_hours)*1.2, yend=max(pd$year_hours)*1.2), col="white")+
   
+  # Create hole in center of plot
+  expand_limits(y = -50000)+
+
+  # Year start and end annotaton 
+  annotate(geom="segment", x=1960.5, xend=1960.5, y=0, yend=max(pd$year_hours)*1.1, col="grey80", size=0.1)+
+  annotate(geom="text", x=1960.5, y=max(pd$year_hours)*1.2, label="Year\n[2019 - 1960]", size=3, colour="grey80")+
+  
+  # Plot title (below plot)
+  annotate(geom="text", 
+           x=1961+((2019-1961)/2), 
+           y=max(pd$year_hours), 
+           label="Total astronaut mission hours by year\n#tidytuesday", 
+           size=3, 
+           colour="grey60")+
+  
+  # geom_vline(aes(xintercept = 1961+((2019-1961)/2)), col=2)+
+
+  # Theming
   theme_void()+
   theme(panel.background = element_rect(fill="grey10"),
         plot.background = element_rect(fill="grey10"),
@@ -123,31 +164,15 @@ pd %>%
 #> Warning: Removed 58 rows containing missing values (geom_text).
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
   
 ggsave("astro-hours-viridis.pdf", width=9, height=9)
 #> Warning: Removed 58 rows containing missing values (geom_text).
-ggsave("astro-hours-viridis.png", width=9, height=9)
-#> Warning: Removed 58 rows containing missing values (geom_text).
 ```
 
-``` r
-last_plot() + 
-  scale_fill_viridis_c(option="plasma")
-#> Scale for 'fill' is already present. Adding another scale for 'fill', which
-#> will replace the existing scale.
-#> Warning: Removed 58 rows containing missing values (geom_text).
-```
-
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-
-``` r
-
-ggsave("astro-hours-plasma.pdf", width=9, height=9)  
-#> Warning: Removed 58 rows containing missing values (geom_text).
-```
+A colourblind friendly version using cividis
 
 ``` r
 last_plot() + 
@@ -157,10 +182,54 @@ last_plot() +
 #> Warning: Removed 58 rows containing missing values (geom_text).
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
 
 ggsave("astro-hours-cividis.pdf", width=9, height=9)
+#> Warning: Removed 58 rows containing missing values (geom_text).
+```
+
+Another variant that labels the years differently
+
+``` r
+pd %>% 
+  ggplot(aes(year_of_mission, year_hours))+
+  geom_col(aes(fill=year_hours))+
+  coord_polar(start=0)+
+  scale_fill_viridis_c(option="cividis", begin = 0.1)+
+  expand_limits(y = -50000)+
+  geom_text(aes(label = text_label), hjust="outward", col="grey80", nudge_y=8000, size=3)+
+  
+  geom_text(data=tibble(x=c(2019, 1961), y=-10000), 
+            aes(x, y, label=x), col="grey80", size=3, hjust="outward")+
+  geom_segment(aes(x=1964, xend=2016, y=-10000, yend=-10000), 
+               col="grey80", arrow = arrow(length = unit(0.1, "inches")), size=0.1)+
+  
+  theme_void()+
+  theme(panel.background = element_rect(fill="grey10"),
+        plot.background = element_rect(fill="grey10"),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "",
+        axis.text.x = element_blank(),
+        axis.line.y = element_blank(),
+        plot.title = element_text(colour="white", hjust = 0.5),
+        plot.subtitle = element_text(colour="white", hjust = 0.5),
+        plot.caption = element_text(colour="white", hjust = 0.5))+
+  
+  annotate(geom="text", x=1961+((2019-1961)/2), y=max(pd$year_hours), 
+           label="Total astronaut mission hours by year\n#tidytuesday", size=3, colour="grey60")
+#> Warning: Removed 58 rows containing missing values (geom_text).
+```
+
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+``` r
+
+ggsave("astro-hours-cividis-2.pdf", width=9, height=9)
 #> Warning: Removed 58 rows containing missing values (geom_text).
 ```
