@@ -189,7 +189,8 @@ rfmod$err.rate %>%
   ggplot(aes(tree, v, col=k))+
   geom_line()+
   facet_wrap(~k, nrow=1)+
-  theme(legend.position = "")
+  theme(legend.position = "")+
+  scale_colour_viridis_d()
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
