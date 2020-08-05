@@ -141,7 +141,7 @@ ie_data %>%
   guides(fill = guide_legend(nrow = 1))+
   
   geom_text(x=0.5, y=-120000, 
-            label = "2018 European Energy Imports and Exports [GWh]\n#tidytuesday | @dickie-roper",
+            label = "2018 European Energy Imports and Exports [GWh]\n#tidytuesday | @dickie_roper",
             size=2, col="grey80")
 #> Warning: Removed 36 rows containing missing values (geom_text).
 
