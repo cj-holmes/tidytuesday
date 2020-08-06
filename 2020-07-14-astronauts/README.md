@@ -134,13 +134,13 @@ pd %>%
 
   # Year start and end annotaton 
   annotate(geom="segment", x=1960.5, xend=1960.5, y=0, yend=max(pd$year_hours)*1.1, col="grey80", size=0.1)+
-  annotate(geom="text", x=1960.5, y=max(pd$year_hours)*1.2, label="Year\n[2019 - 1960]", size=3, colour="grey80")+
+  annotate(geom="text", x=1960.5, y=max(pd$year_hours)*1.2, label="Year\n[2019 - 1961]", size=3, colour="grey80")+
   
   # Plot title (below plot)
   annotate(geom="text", 
            x=1961+((2019-1961)/2), 
            y=max(pd$year_hours), 
-           label="Total astronaut mission hours by year\n#tidytuesday", 
+           label="Total astronaut mission hours by year\n#tidytuesday | @dickie_roper", 
            size=3, 
            colour="grey60")+
   
@@ -203,7 +203,7 @@ pd %>%
   
   geom_text(data=tibble(x=c(2019, 1961), y=-10000), 
             aes(x, y, label=x), col="grey80", size=3, hjust="outward")+
-  geom_segment(aes(x=1964, xend=2016, y=-10000, yend=-10000), 
+  geom_segment(aes(x=1964, xend=2016, y=-8000, yend=-8000), 
                col="grey80", arrow = arrow(length = unit(0.1, "inches")), size=0.1)+
   
   theme_void()+
@@ -222,7 +222,7 @@ pd %>%
         plot.caption = element_text(colour="white", hjust = 0.5))+
   
   annotate(geom="text", x=1961+((2019-1961)/2), y=max(pd$year_hours), 
-           label="Total astronaut mission hours by year\n#tidytuesday", size=3, colour="grey60")
+           label="Total astronaut mission hours by year\n#tidytuesday | @dickie_roper", size=3, colour="grey60")
 #> Warning: Removed 58 rows containing missing values (geom_text).
 ```
 
